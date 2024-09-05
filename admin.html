@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Post - AskaTech</title>
+  <!-- Bootstrap CSS CDN -->
+  <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+  <link href="/bootstrap/icons" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 56px; /* Height of the top navbar */
+      padding-bottom: 56px; /* Height of the bottom navbar */
+    }
+    .fixed-bottom {
+      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+      z-index: 1000;
+    }
+    .navbar-nav {
+      display: flex;
+      flex-direction: row; /* Ensure horizontal layout */
+      justify-content: space-around;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    .nav-item {
+      flex: 1;
+      text-align: center;
+    }
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+      font-size: 14px;
+      color: #000;
+    }
+    .nav-link i {
+      font-size: 20px;
+    }
+    .nav-link span {
+      font-size: 12px;
+    }
+    .preview-container {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    .preview-img {
+      max-width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      margin-top: 10px;
+    }
+    .preview-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .preview-content p {
+      overflow-wrap: break-word; /* Ensures long words or paragraphs break and wrap */
+      word-wrap: break-word;     /* Additional property for older browsers */
+      white-space: pre-wrap;     /* Preserve whitespace but wrap text */
+      margin: 5px 0;
+    }
+    .preview-content div {
+      max-height: 800px;
+      overflow-y: auto;
+      width: 100%; /* Ensure content uses full width */
+    }
+    .author{
+        font-weight: bolder;
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        border-radius: 1em;
+        border-color: darkgray;
+        color: orange;
+        
+    }
+    /* Full-screen overlay for loading */
+/* Full-screen overlay for loading */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7); /* Transparent white overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Make sure it's above everything */
+}
+
+/* Customize Bootstrap spinner */
+.spinner-border {
+  width: 80px; /* Increase size */
+  height: 80px; /* Increase size */
+  border-width: 8px; /* Thicker border */
+  border-color: rgba(0, 123, 255, 0.25) transparent rgba(0, 123, 255, 0.25) transparent; /* Customize color */
+}
+
+/* Add a pulsing effect to make it more dynamic */
+.spinner-border::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid rgba(0, 123, 255, 0.5);
+  border-top-color: transparent;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">AskaTech</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container" style="margin-top: 30px; margin-bottom: 70px;">
+    <h1>Update Post</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <form id="update-post-form" action="/update-post" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                  <option value="" disabled selected>Select category</option>
+                  <option value="tech">Tech</option>
+                  <option value="sport">Sport</option>
+                  <option value="political">Political</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="time" class="form-label">Post Time</label>
+                <input type="datetime-local" class="form-control" id="time" name="time" required>
+              </div>
+          <div class="mb-3">
+            <label for="image" class="form-label">Post Image</label>
+            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+            <div id="image-preview" class="preview-section"></div>
+          </div>
+          <div class="mb-3">
+            <label for="header" class="form-label">Post Header</label>
+            <input type="text" class="form-control" id="header" name="header" required>
+          </div>
+          <div class="mb-3">
+            <label for="author" class="form-label">Author</label>
+            <input type="text" class="form-control" id="author" name="author" required>
+          </div>
+          <div class="mb-3">
+            <label for="content" class="form-label">Post Content</label>
+            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+          </div>
+         
+         
+         
+          <button type="submit" class="btn btn-primary">Update Post</button>
+          <div id="loading" class="loading-overlay" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          
+          
+        </form>
+      </div>
+      <div class="col-md-6">
+        <div id="preview-container" class="preview-container">
+            <div class="row ">
+                <div class="col-sm-5 ">
+                  
+                  <p id="preview-time"></p>
+                </div>
+                <div class="col-sm-3 ">
+                    <p id="preview-category"></p>
+                </div>
+                <div class="col-sm-4 ">
+                    
+                  </div>
+              </div>
+            <div class="preview-content">
+                <div>
+                  
+                  <img id="preview-image" class="preview-img" alt="Image Preview">
+                  <p id="preview-header"></p>
+                  <p id="preview-author"></p>
+                  <p id="preview-content-text"></p>
+                </div>
+              </div>
+              
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="navbar navbar-light bg-light fixed-bottom">
+    <div class="container-fluid">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="bi bi-cloud-plus-fill"></i>
+            <span>Publish</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="bi bi-pencil-square"></i>
+            <span>Edit</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <i class="bi bi-person-fill-gear"></i>
+            <span>Account</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Bootstrap JS and Popper.js -->
+  <script src="../../bootstrap/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- JavaScript for Preview -->
+  <script type="module">
+    function updatePreview() {
+      const image = document.getElementById('image').files[0];
+      const header = document.getElementById('header').value;
+      const content = document.getElementById('content').value;
+      const author = document.getElementById('author').value;
+      const time = document.getElementById('time').value;
+      const category = document.getElementById('category').value;
+
+      // Update image preview
+      if (image) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('preview-image').src = e.target.result;
+        }
+        reader.readAsDataURL(image);
+      } else {
+        document.getElementById('preview-image').src = '';
+      }
+
+      // Update other previews
+      document.getElementById('preview-header').textContent = `Header: ${header}`;
+      document.getElementById('preview-content-text').textContent = `Content: ${content}`;
+      document.getElementById('preview-author').textContent = `Author: ${author}`;
+      document.getElementById('preview-time').textContent = `Time: ${new Date(time).toLocaleString()}`;
+      document.getElementById('preview-category').textContent = `Category: ${category}`;
+    }
+
+    // Add event listeners to update preview
+    document.getElementById('image').addEventListener('change', updatePreview);
+    document.getElementById('header').addEventListener('input', updatePreview);
+    document.getElementById('content').addEventListener('input', updatePreview);
+    document.getElementById('author').addEventListener('input', updatePreview);
+    document.getElementById('time').addEventListener('change', updatePreview);
+    document.getElementById('category').addEventListener('change', updatePreview);
+
+    
+  // Import the Firebase services you need
+  import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
+  import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyC55NBLTdl7ri5SJQKy-HAFEMG7C9NHcA0",
+    authDomain: "askatechtoday.firebaseapp.com",
+    projectId: "askatechtoday",
+    storageBucket: "askatechtoday.appspot.com",
+    messagingSenderId: "934836893047",
+    appId: "1:934836893047:web:7c2f86d1f79bcef8cbdd72",
+    measurementId: "G-0T8CN0XL43"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  
+  // Initialize Firestore and Storage
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+// Show loading spinner
+function showLoading() {
+  document.getElementById('loading').style.display = 'block';
+}
+
+// Hide loading spinner
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+}
+
+// Form submission event listener
+document.getElementById('update-post-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  // Show loading spinner
+  showLoading();
+
+  const category = document.getElementById('category').value;
+  const time = document.getElementById('time').value;
+  const imageFile = document.getElementById('image').files[0];
+  const header = document.getElementById('header').value;
+  const author = document.getElementById('author').value;
+  const content = document.getElementById('content').value;
+
+  if (!imageFile) {
+    alert("Please select an image.");
+    hideLoading(); // Hide spinner if there's an error
+    return;
+  }
+
+  try {
+    // Upload the image to Firebase Storage
+    const storageRef = ref(storage, `posts/${Date.now()}_${imageFile.name}`);
+    const snapshot = await uploadBytes(storageRef, imageFile);
+    const imageURL = await getDownloadURL(snapshot.ref);
+
+    // Save post data to Firestore
+    const postId = header.toLowerCase().replace(/\s+/g, '-');
+    await setDoc(doc(db, "posts", postId), {
+      category,
+      time: new Date(time),
+      imageUrl: imageURL,
+      header,
+      author,
+      content
+    }, { merge: true });
+
+    alert('Post updated successfully!');
+  } catch (error) {
+    console.error("Error updating post:", error);
+    alert('Error updating post.');
+  } finally {
+    hideLoading(); // Always hide the loading spinner
+  }
+});
+
+  </script>
+</body>
+</html>
