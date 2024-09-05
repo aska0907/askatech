@@ -1,0 +1,2 @@
+# askatech
+technology trends blog
